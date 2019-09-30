@@ -23,6 +23,9 @@ def main(ctx, puzzle_file):
 @main.command()
 @click.pass_context
 def print_puzzle(ctx):
+    """
+    Prints a given puzzle
+    """
     puzzle = PuzzleUtils.load_puzzle(ctx.obj[PUZZLE_FILE_KEY])
     puzzle.print_grid()
 
@@ -30,6 +33,9 @@ def print_puzzle(ctx):
 @main.command()
 @click.pass_context
 def solve_puzzle(ctx):
+    """
+    Solves a given puzzle
+    """
     puzzle = PuzzleUtils.load_puzzle(ctx.obj[PUZZLE_FILE_KEY])
     puzzle.solve()
     logger.info(puzzle.dump_grid())

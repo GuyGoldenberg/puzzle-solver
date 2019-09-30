@@ -11,6 +11,10 @@ from enum import Enum
 
 
 class PieceSide(Enum):
+    """
+    An enum which defines a relation between 2 pieces.
+    Mainly used to verify a puzzle piece placement
+    """
     TOP = 1
     RIGHT = 2
     BOTTOM = 3
@@ -19,6 +23,13 @@ class PieceSide(Enum):
 
 class PuzzlePiece:
     def __init__(self, piece_id, sides: list):
+        """
+        Represents a puzzle piece.
+        A puzzle pieces consists of an ID and 4 sides.
+
+        :param piece_id: The ID of the given piece
+        :param sides: All of the piece sides (top, right, bottom and left)
+        """
         self.id = piece_id
         self.top, self.right, self.bottom, self.left = sides
         self._rotate_count = 0
@@ -62,6 +73,10 @@ class PuzzlePiece:
 
 class PuzzleIterator:
     def __init__(self, puzzle: Puzzle):
+        """
+        An iterator for the puzzle, allows to iterate over all of the puzzle pieces
+        :param puzzle: The puzzle object
+        """
         self._puzzle = puzzle
         self._current_row = 0
         self._current_column = 0
@@ -86,11 +101,21 @@ class PuzzleIterator:
 
 class Puzzle:
     def __init__(self, pieces: List[PuzzlePiece]):
+        """
+        This class represents a puzzle board.
+        It holds the puzzle pieces, contains their coordinates and solves the puzzle
+        :param pieces: A list of puzzle pieces
+        """
         self._puzzle_grid = None
         self.grid_size = None
-        self.load_pieces_to_grid(pieces)
+        self._load_pieces_to_grid(pieces)
 
-    def load_pieces_to_grid(self, pieces):
+    def _load_pieces_to_grid(self, pieces: List[PuzzlePiece]):
+        """
+        Loads a list puzzle pieces to the puzzle board
+        :param pieces: A list of puzzle pieces
+        :type pieces: List[PuzzlePiece]
+        """
         zero_piece = PuzzlePiece(0, [0, 0, 0, 0])
         grid_size = int(math.sqrt(len(pieces)))
         self.grid_size = grid_size
@@ -103,27 +128,64 @@ class Puzzle:
             self._puzzle_grid[1 + piece_row][1 + piece_column] = piece  # The +1 is because of the zero pieces
 
     def print_grid(self):
+        """
+        Prints the grid in a table format
+        """
         logger.info(tabulate(self._puzzle_grid))
 
     def dump_grid(self):
+        """
+        Dumps the grid in the desired solution format
+        :return: The solution string of all of the pieces locations and rotations
+        """
         return "; ".join([f"{piece.id},{piece.rotations}" for piece in iter(self)])
 
     def get_piece(self, row, column) -> PuzzlePiece:
+        """
+        Retrieves the piece object which resides in a certain row and column
+
+        :return: The requested piece
+        :rtype: PuzzlePiece
+        """
         return self._puzzle_grid[row + 1][column + 1]
 
-    def _set_piece(self, row, column, piece):
+    def _set_piece(self, row, column, piece: PuzzlePiece):
+        """
+        Sets a piece in a given coordinate
+
+        :type piece: PuzzlePiece
+        """
         self._puzzle_grid[row + 1][column + 1] = piece
 
     def check_piece_placement(self, row, column):
+        """
+        Verifies that a given piece is placed correctly in the puzzle.
+        It checks if the upper and left piece match the given puzzle piece.
+
+        :param row: The row of the piece to check
+        :param column: The column of the piece to check
+        :return: Whether the piece was places correctly
+        """
+        # TODO: Add support to get piece by it's relative position to the current piece
         result = self.get_piece(row, column).verify_piece(self.get_piece(row - 1, column), PieceSide.TOP)
         return result & self.get_piece(row, column).verify_piece(self.get_piece(row, column - 1), PieceSide.LEFT)
 
     def swap_pieces(self, row1, column1, row2, column2):
+        """
+        Swaps two pieces with each other
+        """
         first_piece = self.get_piece(row1, column1)
         self._set_piece(row1, column1, self.get_piece(row2, column2))
         self._set_piece(row2, column2, first_piece)
 
     def next_piece_coordinate(self, row, column):
+        """
+        Returns the next coordinate (row, column) of a given piece
+        :param row: The current piece row
+        :param column: The current piece column
+        :return: The next piece coordinates (row, column)
+        """
+        # TODO: Make pieces coordinates a namedtuple
         column += 1
         if column == self.grid_size:
             row += 1
@@ -133,7 +195,15 @@ class Puzzle:
         return row, column
 
     def solve_piece(self, solving_row, solving_column):
+        """
+        This is the main function for solving the puzzle.
+        It is used to solve from a certain coordinate on the puzzle and ahead (top left to bottom right)
+        Most of the times this function will be called recursively
 
+        :param solving_row: The row of the piece to solve the puzzle from
+        :param solving_column: The column of the piece to solve the puzzle from
+        :return: Whether we managed to solve the puzzle for this piece placement
+        """
         next_swap_piece = (solving_row, solving_column)
         solving_piece = self.get_piece(solving_row, solving_column)
         logger.debug(f"Now trying to solve piece ({solving_row}, {solving_column})")
@@ -169,6 +239,12 @@ class Puzzle:
             solving_piece = self.get_piece(solving_row, solving_column)
 
     def solve(self):
+        """
+        Solves the current puzzle.
+        This function solves the puzzle from the top left to the bottom right.
+        """
+        # Find a part which fits to be the first, try to solve with it
+
         if self.solve_piece(0, 0):
             logger.info("The puzzle is solved!")
         else:
@@ -179,6 +255,9 @@ class Puzzle:
 
 
 class PuzzleUtils:
+    """
+    General utilities which are used for the puzzle handling
+    """
     PIECES_SEPARATOR = ";"
     NAME_VALUE_SEPARATOR = ","
 
