@@ -1,7 +1,7 @@
 import click
 import click_log
-from logger import logger
-from puzzle import PuzzleUtils
+from src.logger import logger
+from src.puzzle import PuzzleUtils
 
 click_log.basic_config(logger)
 

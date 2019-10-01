@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from logger import logger
+from src.logger import logger
 
-from exceptions import EndOfGridReached, MaxRotationsReached
+from src.exceptions import EndOfGridReached, MaxRotationsReached
 from typing import List
 from tabulate import tabulate
 import json
@@ -38,8 +38,13 @@ class PuzzlePiece:
     def rotations(self):
         return self._rotate_count
 
-    def rotate(self, internal_rotation=False):
-        if not internal_rotation and self._rotate_count == 3:
+    def rotate(self, _increase_rotations_count=False):
+        """
+        This function rotates the current piece once. The rotation is to the right
+
+        :param _increase_rotations_count: Whether the rotation shouldn't be added to the rotations count
+        """
+        if not _increase_rotations_count and self._rotate_count == 3:
             raise MaxRotationsReached()
 
         _ = self.left
@@ -47,17 +52,27 @@ class PuzzlePiece:
         self.bottom = self.right
         self.right = self.top
         self.top = _
-        if not internal_rotation:
+        if not _increase_rotations_count:
             self._rotate_count += 1
 
     def reset_rotations(self):
+        """
+        Resets the current piece to it's original state without any rotations
+        """
         original_rotate_count = self._rotate_count
         for i in range(4 - original_rotate_count):
-            self.rotate(internal_rotation=True)
+            self.rotate(_increase_rotations_count=True)
 
         self._rotate_count = 0
 
     def verify_piece(self, piece: PuzzlePiece, side_of_second_piece: PieceSide):
+        """
+        Verifies that a given piece side matches the adjacent piece side
+
+        :param piece: The piece to compare it's side with current piece side
+        :param side_of_second_piece: The side to compare the given piece with
+        :return: Whether the pieces sides match or not
+        """
         if side_of_second_piece == PieceSide.TOP:
             return self.top == piece.bottom
         elif side_of_second_piece == PieceSide.RIGHT:
