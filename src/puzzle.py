@@ -22,6 +22,8 @@ class PieceSide(Enum):
 
 
 class PuzzlePiece:
+    MAX_ROTATIONS = 3
+
     def __init__(self, piece_id, sides: list):
         """
         Represents a puzzle piece.
@@ -44,7 +46,7 @@ class PuzzlePiece:
 
         :param _increase_rotations_count: Whether the rotation shouldn't be added to the rotations count
         """
-        if not _increase_rotations_count and self._rotate_count == 3:
+        if not _increase_rotations_count and self._rotate_count == PuzzlePiece.MAX_ROTATIONS:
             raise MaxRotationsReached()
 
         _ = self.left
@@ -249,7 +251,8 @@ class Puzzle:
                 next_swap_piece = self.next_piece_coordinate(*next_swap_piece)
             except EndOfGridReached:
                 return False
-            logger.debug(f"Swapping ({solving_row}, {solving_column}) with ({next_swap_piece[0]}, {next_swap_piece[1]})")
+            logger.debug(
+                f"Swapping ({solving_row}, {solving_column}) with ({next_swap_piece[0]}, {next_swap_piece[1]})")
             self.swap_pieces(solving_row, solving_column, *next_swap_piece)
             solving_piece = self.get_piece(solving_row, solving_column)
 
